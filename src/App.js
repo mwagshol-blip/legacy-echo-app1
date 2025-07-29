@@ -276,15 +276,10 @@ export default function App() {
 
   return (
     <div className="container">
-      <header>
-        <h1>
-          <span role="img" aria-label="books">
-            📚
-          </span>{" "}
-          Legacy Echo
-        </h1>
-        <p>Preserve your favorite books, movies, music, philosophy, places & more.</p>
-      </header>
+      <header className="banner-header">
+  <img src="/banner2.png" alt="Legacy Echo Banner" className="banner-image" />
+  <p className="subheader">Preserve your favorite books, movies, music, philosophy, places & more.</p>
+</header>
 
       <section className="form-section">
         <div className="form-row category-select-row">

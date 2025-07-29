@@ -76,7 +76,7 @@ textarea {
 .export-btn,
 .add-category-section button,
 .entry-actions button {
-  background-color: #2563eb;
+  background-color: #87ceeb;
   color: white;
   border: none;
   padding: 0.75rem 1.8rem;
@@ -92,7 +92,7 @@ textarea {
 .export-btn:hover,
 .add-category-section button:hover,
 .entry-actions button:hover {
-  background-color: #1e40af;
+  background-color: #00bfff;
 }
 
 .entry-actions button.delete-btn {
@@ -114,7 +114,7 @@ textarea {
 .entries-section h2 {
   margin-bottom: 1rem;
   font-weight: 900;
-  color: #1e293b;
+  color: #87ceeb;
 }
 
 .entry-card {
@@ -168,6 +168,27 @@ textarea {
   font-weight: 600;
 }
 
+.banner-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.banner-image {
+  max-width: 600px;
+  width: 90%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  margin-bottom: 0.5rem;
+}
+
+.subheader {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #555;
+  margin-top: 0;
+}
+
 .entry-actions {
   margin-top: 1rem;
   display: flex;
@@ -183,7 +204,7 @@ textarea {
   align-items: center;
   font-weight: 900;
   font-size: 1.7rem;
-  color: #2563eb;
+  color: #87ceeb;
   margin-bottom: 1rem;
   user-select: none;
 }
