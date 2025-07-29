@@ -1,0 +1,262 @@
+/* Modern clean style with rounded inputs/buttons */
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f4ff;
+  margin: 0;
+  padding: 1rem;
+  color: #1e293b;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.1);
+  padding: 2rem 3rem;
+}
+
+header h1 {
+  color: #2563eb;
+  font-size: 3rem;
+  margin-bottom: 0.2rem;
+  font-weight: 900;
+}
+
+header p {
+  font-size: 1.25rem;
+  color: #475569;
+  margin-bottom: 2rem;
+}
+
+.form-section,
+.filters-section,
+.entries-section,
+.add-category-section {
+  margin-bottom: 3rem;
+}
+
+.form-row {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row label {
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #334155;
+}
+
+input[type="text"],
+textarea,
+select {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 6px #93c5fd;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.save-btn,
+.export-btn,
+.add-category-section button,
+.entry-actions button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.8rem;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.save-btn:hover,
+.export-btn:hover,
+.add-category-section button:hover,
+.entry-actions button:hover {
+  background-color: #1e40af;
+}
+
+.entry-actions button.delete-btn {
+  background-color: #ef4444;
+  margin-left: 1rem;
+}
+
+.entry-actions button.delete-btn:hover {
+  background-color: #b91c1c;
+}
+
+.prompt {
+  font-style: italic;
+  color: #64748b;
+  margin-bottom: 1.3rem;
+  font-size: 1.1rem;
+}
+
+.entries-section h2 {
+  margin-bottom: 1rem;
+  font-weight: 900;
+  color: #1e293b;
+}
+
+.entry-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.3rem 1.6rem;
+  margin-bottom: 1.3rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.05);
+  background-color: #f9fafb;
+  transition: box-shadow 0.3s ease;
+}
+
+.entry-card:hover {
+  box-shadow: 0 4px 20px rgb(37 99 235 / 0.2);
+}
+
+.entry-card small.timestamp {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.entry-details p {
+  margin: 0.3rem 0;
+  font-size: 1rem;
+}
+
+.entry-image {
+  max-width: 180px;
+  border-radius: 12px;
+  margin: 0.8rem 0;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+}
+
+.entry-video {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 0.8rem 0;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+}
+
+.comments {
+  background-color: #e0e7ff;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin-top: 0.8rem;
+  font-style: italic;
+  color: #334155;
+  font-weight: 600;
+}
+
+.entry-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.category-group {
+  margin-bottom: 3rem;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  font-weight: 900;
+  font-size: 1.7rem;
+  color: #2563eb;
+  margin-bottom: 1rem;
+  user-select: none;
+}
+
+.category-list-image {
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: white;
+  padding: 4px;
+  box-shadow: 0 0 8px rgb(37 99 235 / 0.3);
+}
+
+.category-select-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+.category-select-row select {
+  flex-grow: 1;
+  max-width: 300px;
+}
+
+.category-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgb(37 99 235 / 0.5);
+  user-select: none;
+}
+
+.filter-select {
+  max-width: 250px;
+  margin-right: 1rem;
+  border-radius: 12px;
+}
+
+.filters-section label {
+  font-weight: 700;
+  margin-right: 0.6rem;
+  color: #475569;
+}
+
+.filters-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+  margin-bottom: 3rem;
+}
+
+.filters-section input[type="text"] {
+  border-radius: 30px;
+  padding: 0.75rem 1.2rem;
+  border: 1.5px solid #cbd5e1;
+  font-size: 1rem;
+  max-width: 320px;
+}
+
+@media (max-width: 650px) {
+  .filters-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .category-select-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .category-select-row select {
+    max-width: 100%;
+  }
+}
+
