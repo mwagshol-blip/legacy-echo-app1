@@ -70,20 +70,6 @@ const initDB = async () => {
   });
 };
 
-// Sanitize entry data to save only strings, numbers, booleans
-const sanitizeEntryData = (data) => {
-  const cleanData = {};
-  for (const key in data) {
-    const val = data[key];
-    if (typeof val === 'string' && val.trim() !== '') {
-      cleanData[key] = val.trim();
-    } else if (typeof val === 'number' || typeof val === 'boolean') {
-      cleanData[key] = val;
-    }
-  }
-  return cleanData;
-};
-
 function App() {
   const [categories, setCategories] = useState([
     'Books', 'Movies', 'Music', 'Philosophy', 'Places', 'Daily Entry', 'Other',
@@ -97,7 +83,7 @@ function App() {
   const [videoBlob, setVideoBlob] = useState(null);
   const [videoURL, setVideoURL] = useState(null);
   const [recording, setRecording] = useState(false);
-
+  // Refs for stream and recorder
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const liveVideoRef = useRef(null);
@@ -105,7 +91,6 @@ function App() {
   const [prompt, setPrompt] = useState('');
   const [editingId, setEditingId] = useState(null);
 
-  // Load entries from IndexedDB on mount
   useEffect(() => {
     const loadEntries = async () => {
       const db = await initDB();
@@ -124,10 +109,11 @@ function App() {
     loadEntries();
   }, []);
 
-  // When recording starts, assign stream to live video and play it
+  // Assign the stream to video element only once after recording starts
   useEffect(() => {
     if (recording && liveVideoRef.current && streamRef.current) {
       liveVideoRef.current.srcObject = streamRef.current;
+      // play can be awaited or just called; catch errors to avoid unhandled promise
       liveVideoRef.current.play().catch(() => {});
     }
   }, [recording]);
@@ -215,7 +201,7 @@ function App() {
       recorder.start();
       mediaRecorderRef.current = recorder;
       setRecording(true);
-      setVideoURL(null); // clear previous video preview
+      setVideoURL(null); // clear old video
     } catch (err) {
       alert('Error accessing camera/microphone: ' + err.message);
     }
@@ -233,31 +219,20 @@ function App() {
       alert('Please select a category');
       return;
     }
-
-    const cleanEntryData = sanitizeEntryData(entryData);
-
     const db = await initDB();
     const timestamp = new Date().toISOString();
 
     const newEntry = {
+      id: editingId ?? undefined,
       category: selectedCategory,
-      data: cleanEntryData,
+      data: entryData,
       image,
       videoData: null,
       timestamp,
     };
 
-    if (editingId != null) {
-      newEntry.id = editingId;
-    }
-
     if (videoBlob) {
-      try {
-        newEntry.videoData = await videoBlob.arrayBuffer();
-      } catch (error) {
-        alert("Error processing video data for saving: " + error.message);
-        return;
-      }
+      newEntry.videoData = await videoBlob.arrayBuffer();
     }
 
     try {
@@ -271,22 +246,24 @@ function App() {
       } else {
         const id = await db.add('entries', newEntry);
         newEntry.id = id;
-        newEntry.video = videoURL;
+        newEntry.video = videoURL; // only in-memory for display
         setEntries([...entries, newEntry]);
       }
     } catch (error) {
-      alert("Error saving entry: " + error.message);
+      alert('Error saving entry: ' + error.message);
       return;
     }
 
-    // Reset form and media states
     setEntryData({});
     setImage(null);
     setVideoBlob(null);
     setVideoURL(null);
     setEditingId(null);
 
-    // Do NOT clear live video element or its srcObject here to avoid black screen
+    if (liveVideoRef.current) {
+      liveVideoRef.current.srcObject = null;
+      liveVideoRef.current.load();
+    }
   };
 
   const startEditEntry = (entry) => {
@@ -306,41 +283,8 @@ function App() {
     setEntries(entries.filter((e) => e.id !== id));
   };
 
-  // Helper to convert ArrayBuffer to base64 string
-  const arrayBufferToBase64 = (buffer) => {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    bytes.forEach((b) => (binary += String.fromCharCode(b)));
-    return window.btoa(binary);
-  };
-
-  // Helper to convert base64 string back to ArrayBuffer
-  const base64ToArrayBuffer = (base64) => {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
-
-  // Updated export: include base64 video data string
   const saveListToFile = () => {
-    const exportEntries = entries.map((entry) => {
-      let videoDataBase64 = null;
-      if (entry.videoData) {
-        videoDataBase64 = arrayBufferToBase64(entry.videoData);
-      }
-      return {
-        ...entry,
-        videoData: videoDataBase64,
-        // Remove video URL so JSON size is smaller and clean
-        video: undefined,
-      };
-    });
-
-    const blob = new Blob([JSON.stringify(exportEntries)], {
+    const blob = new Blob([JSON.stringify(entries)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
@@ -350,7 +294,6 @@ function App() {
     link.click();
   };
 
-  // Updated import: decode base64 to ArrayBuffer, create video URL
   const loadListFromFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -362,9 +305,6 @@ function App() {
       const store = tx.objectStore('entries');
 
       for (const entry of loadedEntries) {
-        if (entry.videoData) {
-          entry.videoData = base64ToArrayBuffer(entry.videoData);
-        }
         await store.put(entry);
       }
       await tx.done;
@@ -498,7 +438,7 @@ function App() {
             )}
           </div>
 
-          {/* Live video preview is always rendered, show/hide by style */}
+          {/* Always render live video, show/hide via style */}
           <video
             ref={liveVideoRef}
             autoPlay

@@ -1,0 +1,279 @@
+// Full fixed App.js (starting part only — will be chunked)
+import React, { useState, useEffect, useRef } from 'react';
+import './styles.css';
+
+const defaultCategories = [
+  { name: 'Books', icon: '📚', fields: ['Title', 'Author', 'Link', 'Comment'] },
+  { name: 'Movies', icon: '🎬', fields: ['Title', 'Director', 'Link', 'Comment'] },
+  { name: 'Music', icon: '🎵', fields: ['Title', 'Artist', 'Link', 'Comment'] },
+  { name: 'Philosophy', icon: '💭', fields: ['Title', 'Thinker', 'Link', 'Comment'] },
+  { name: 'Places', icon: '🌍', fields: ['Name', 'Location', 'Link', 'Comment'] },
+  { name: 'Daily Entry', icon: '📅', fields: ['Mood', 'Highlight of the Day', 'Comment'] }
+];
+
+function App() {
+  const [entries, setEntries] = useState([]);
+  const [category, setCategory] = useState('Books');
+  const [customCategories, setCustomCategories] = useState([]);
+  const [fields, setFields] = useState(defaultCategories.find(cat => cat.name === category)?.fields || []);
+  const [inputs, setInputs] = useState({});
+  const [image, setImage] = useState(null);
+  const [videoURL, setVideoURL] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+  const [videoStream, setVideoStream] = useState(null);
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterKeyword, setFilterKeyword] = useState('');
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('entries');
+    if (saved) {
+      setEntries(JSON.parse(saved));
+    }
+
+    const savedCustomCategories = localStorage.getItem('customCategories');
+    if (savedCustomCategories) {
+      setCustomCategories(JSON.parse(savedCustomCategories));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('entries', JSON.stringify(entries));
+  }, [entries]);
+
+  useEffect(() => {
+    localStorage.setItem('customCategories', JSON.stringify(customCategories));
+  }, [customCategories]);
+
+  useEffect(() => {
+    const selected = [...defaultCategories, ...customCategories].find(cat => cat.name === category);
+    setFields(selected ? selected.fields : []);
+  }, [category, customCategories]);
+
+  const handleInputChange = (field, value) => {
+    setInputs(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleStartRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    setVideoStream(stream);
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play();
+    }
+
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+      }
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      setVideoURL(url);
+      setRecordedChunks(chunks);
+      setIsRecording(false);
+      stream.getTracks().forEach(track => track.stop());
+      setVideoStream(null);
+    };
+
+    recorder.start();
+    setMediaRecorder(recorder);
+    setIsRecording(true);
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+    }
+  };
+
+  const saveEntry = () => {
+    if (!category) {
+      alert('Please select a category');
+      return;
+    }
+
+    const newEntry = {
+      id: Date.now(),
+      category,
+      data: inputs,
+      image,
+      video: videoURL,
+      timestamp: new Date().toISOString(),
+    };
+
+    setEntries(prev => [...prev, newEntry]);
+    setInputs({});
+    setImage(null);
+    setVideoURL('');
+    setRecordedChunks([]);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result); // base64 string
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFieldChange = (field, value) => {
+    setInputs((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const renderField = (field) => {
+    return (
+      <div key={field} className="form-group">
+        <label>{field}</label>
+        <input
+          type="text"
+          value={inputs[field] || ''}
+          onChange={(e) => handleFieldChange(field, e.target.value)}
+        />
+      </div>
+    );
+  };
+
+  const getFieldsForCategory = (category) => {
+    switch (category) {
+      case 'Books':
+        return ['Title', 'Author', 'Link', 'Comment'];
+      case 'Movies':
+        return ['Title', 'Director', 'Link', 'Comment'];
+      case 'Music':
+        return ['Title', 'Artist', 'Link', 'Comment'];
+      case 'Philosophy':
+        return ['Thinker', 'Concept', 'Link', 'Comment'];
+      case 'Places':
+        return ['Name', 'Location', 'Link', 'Comment'];
+      case 'Daily Entry':
+        return ['Mood', 'Highlight of the Day', 'Comment'];
+      default:
+        return ['Title', 'Comment'];
+    }
+  };
+
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+    setInputs({});
+  };
+
+  const renderEntries = () => {
+    const filteredEntries = category
+      ? entries.filter((entry) => entry.category === category)
+      : entries;
+
+    return filteredEntries.map((entry) => (
+      <div key={entry.id} className="entry-card">
+        <h3>{entry.category}</h3>
+        {Object.entries(entry.data).map(([key, value]) => (
+          <p key={key}>
+            <strong>{key}:</strong> {value}
+          </p>
+        ))}
+        {entry.image && (
+          <img
+            src={entry.image}
+            alt="Entry"
+            className="entry-image"
+          />
+        )}
+        {entry.video && (
+          <video
+            src={entry.video}
+            controls
+            className="entry-video"
+          />
+        )}
+        <p className="timestamp">{new Date(entry.timestamp).toLocaleString()}</p>
+      </div>
+    ));
+  };
+
+  return (
+    <div className="container">
+      <header className="banner-header">
+        <img
+          src="/banner2.png"
+          alt="Legacy Echo Banner"
+          className="banner-image"
+        />
+        <p className="subheader">
+          Preserve your favorite books, movies, music, philosophy, places & more.
+        </p>
+      </header>
+
+      <div className="form">
+        <select value={category} onChange={handleCategoryChange}>
+          <option value="">Select Category</option>
+          <option value="Books">Books</option>
+          <option value="Movies">Movies</option>
+          <option value="Music">Music</option>
+          <option value="Philosophy">Philosophy</option>
+          <option value="Places">Places</option>
+          <option value="Daily Entry">Daily Entry</option>
+        </select>
+
+        {getFieldsForCategory(category).map((field) => renderField(field))}
+
+        <div className="media-buttons">
+          <input type="file" accept="image/*" onChange={handleImageUpload} />
+          {image && (
+            <div className="image-preview">
+              <img src={image} alt="Preview" />
+            </div>
+          )}
+
+          <div className="video-section">
+            <video ref={videoRef} autoPlay muted className="recording-preview" />
+            {!isRecording ? (
+              <button onClick={handleStartRecording}>Start Recording</button>
+            ) : (
+              <button onClick={handleStopRecording}>Stop Recording</button>
+            )}
+            {videoURL && <video src={videoURL} controls />}
+          </div>
+        </div>
+
+        <button onClick={saveEntry} className="save-button">
+          Save Entry
+        </button>
+      </div>
+
+      <div className="entries">{renderEntries()}</div>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+

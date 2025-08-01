@@ -306,41 +306,8 @@ function App() {
     setEntries(entries.filter((e) => e.id !== id));
   };
 
-  // Helper to convert ArrayBuffer to base64 string
-  const arrayBufferToBase64 = (buffer) => {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    bytes.forEach((b) => (binary += String.fromCharCode(b)));
-    return window.btoa(binary);
-  };
-
-  // Helper to convert base64 string back to ArrayBuffer
-  const base64ToArrayBuffer = (base64) => {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
-
-  // Updated export: include base64 video data string
   const saveListToFile = () => {
-    const exportEntries = entries.map((entry) => {
-      let videoDataBase64 = null;
-      if (entry.videoData) {
-        videoDataBase64 = arrayBufferToBase64(entry.videoData);
-      }
-      return {
-        ...entry,
-        videoData: videoDataBase64,
-        // Remove video URL so JSON size is smaller and clean
-        video: undefined,
-      };
-    });
-
-    const blob = new Blob([JSON.stringify(exportEntries)], {
+    const blob = new Blob([JSON.stringify(entries)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
@@ -350,7 +317,6 @@ function App() {
     link.click();
   };
 
-  // Updated import: decode base64 to ArrayBuffer, create video URL
   const loadListFromFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -362,9 +328,6 @@ function App() {
       const store = tx.objectStore('entries');
 
       for (const entry of loadedEntries) {
-        if (entry.videoData) {
-          entry.videoData = base64ToArrayBuffer(entry.videoData);
-        }
         await store.put(entry);
       }
       await tx.done;

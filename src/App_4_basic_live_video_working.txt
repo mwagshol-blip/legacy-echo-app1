@@ -1,0 +1,85 @@
+import React, { useRef, useState } from 'react';
+
+function App() {
+  const liveVideoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const [recording, setRecording] = useState(false);
+  const [videoURL, setVideoURL] = useState(null);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      streamRef.current = stream;
+
+      if (liveVideoRef.current) {
+        liveVideoRef.current.srcObject = stream;
+        liveVideoRef.current.play();
+      }
+
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        setVideoURL(url);
+      };
+
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setRecording(true);
+      setVideoURL(null); // Clear previous recording
+    } catch (err) {
+      console.error('Error starting recording:', err);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    setRecording(false);
+  };
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h1>Live Video Recorder</h1>
+
+      <video
+        ref={liveVideoRef}
+        autoPlay
+        muted
+        style={{ width: '100%', maxWidth: '500px', background: '#000' }}
+      />
+
+      <div style={{ marginTop: '1rem' }}>
+        {!recording ? (
+          <button onClick={startRecording}>Start Recording</button>
+        ) : (
+          <button onClick={stopRecording}>Stop Recording</button>
+        )}
+      </div>
+
+      {videoURL && (
+        <div style={{ marginTop: '2rem' }}>
+          <h2>Recorded Video:</h2>
+          <video
+            src={videoURL}
+            controls
+            style={{ width: '100%', maxWidth: '500px', background: '#000' }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;

@@ -70,7 +70,7 @@ const initDB = async () => {
   });
 };
 
-// Sanitize entry data to save only strings, numbers, booleans
+// Sanitize entry data to keep only primitives (string, number, boolean), no undefined, null, functions or objects
 const sanitizeEntryData = (data) => {
   const cleanData = {};
   for (const key in data) {
@@ -80,6 +80,7 @@ const sanitizeEntryData = (data) => {
     } else if (typeof val === 'number' || typeof val === 'boolean') {
       cleanData[key] = val;
     }
+    // skip null, undefined, objects, functions, empty strings
   }
   return cleanData;
 };
@@ -97,20 +98,18 @@ function App() {
   const [videoBlob, setVideoBlob] = useState(null);
   const [videoURL, setVideoURL] = useState(null);
   const [recording, setRecording] = useState(false);
-
-  const mediaRecorderRef = useRef(null);
-  const streamRef = useRef(null);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const videoRef = useRef(null);
   const liveVideoRef = useRef(null);
-
   const [prompt, setPrompt] = useState('');
   const [editingId, setEditingId] = useState(null);
 
-  // Load entries from IndexedDB on mount
   useEffect(() => {
     const loadEntries = async () => {
       const db = await initDB();
       const allEntries = await db.getAll('entries');
 
+      // Recreate video URL from videoData buffer only in memory
       const processedEntries = allEntries.map(entry => {
         if (entry.videoData) {
           const blob = new Blob([entry.videoData], { type: 'video/webm' });
@@ -123,14 +122,6 @@ function App() {
     };
     loadEntries();
   }, []);
-
-  // When recording starts, assign stream to live video and play it
-  useEffect(() => {
-    if (recording && liveVideoRef.current && streamRef.current) {
-      liveVideoRef.current.srcObject = streamRef.current;
-      liveVideoRef.current.play().catch(() => {});
-    }
-  }, [recording]);
 
   const handleCategoryChange = (category) => {
     if (category === '__new') {
@@ -184,11 +175,9 @@ function App() {
         audio: true,
       });
 
-      streamRef.current = stream;
-
       if (liveVideoRef.current) {
         liveVideoRef.current.srcObject = stream;
-        liveVideoRef.current.play().catch(() => {});
+        await liveVideoRef.current.play();
       }
 
       const recorder = new MediaRecorder(stream);
@@ -202,30 +191,27 @@ function App() {
         const blob = new Blob(chunks, { type: 'video/webm' });
         setVideoBlob(blob);
         setVideoURL(URL.createObjectURL(blob));
+        stream.getTracks().forEach((track) => track.stop());
 
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach((track) => track.stop());
-          streamRef.current = null;
-        }
         if (liveVideoRef.current) {
           liveVideoRef.current.srcObject = null;
+          liveVideoRef.current.load();
         }
       };
 
       recorder.start();
-      mediaRecorderRef.current = recorder;
+      setMediaRecorder(recorder);
       setRecording(true);
-      setVideoURL(null); // clear previous video preview
     } catch (err) {
       alert('Error accessing camera/microphone: ' + err.message);
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      setRecording(false);
     }
-    setRecording(false);
   };
 
   const saveEntry = async () => {
@@ -235,7 +221,6 @@ function App() {
     }
 
     const cleanEntryData = sanitizeEntryData(entryData);
-
     const db = await initDB();
     const timestamp = new Date().toISOString();
 
@@ -260,6 +245,11 @@ function App() {
       }
     }
 
+    // Remove any video URL string or video property before saving
+    delete newEntry.video;
+
+    console.log('Saving entry:', newEntry);
+
     try {
       if (editingId != null) {
         await db.put('entries', newEntry);
@@ -271,22 +261,23 @@ function App() {
       } else {
         const id = await db.add('entries', newEntry);
         newEntry.id = id;
-        newEntry.video = videoURL;
+        newEntry.video = videoURL; // keep for display only
         setEntries([...entries, newEntry]);
       }
     } catch (error) {
       alert("Error saving entry: " + error.message);
-      return;
     }
 
-    // Reset form and media states
     setEntryData({});
     setImage(null);
     setVideoBlob(null);
     setVideoURL(null);
     setEditingId(null);
 
-    // Do NOT clear live video element or its srcObject here to avoid black screen
+    if (liveVideoRef.current) {
+      liveVideoRef.current.srcObject = null;
+      liveVideoRef.current.load();
+    }
   };
 
   const startEditEntry = (entry) => {
@@ -306,41 +297,8 @@ function App() {
     setEntries(entries.filter((e) => e.id !== id));
   };
 
-  // Helper to convert ArrayBuffer to base64 string
-  const arrayBufferToBase64 = (buffer) => {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    bytes.forEach((b) => (binary += String.fromCharCode(b)));
-    return window.btoa(binary);
-  };
-
-  // Helper to convert base64 string back to ArrayBuffer
-  const base64ToArrayBuffer = (base64) => {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
-
-  // Updated export: include base64 video data string
   const saveListToFile = () => {
-    const exportEntries = entries.map((entry) => {
-      let videoDataBase64 = null;
-      if (entry.videoData) {
-        videoDataBase64 = arrayBufferToBase64(entry.videoData);
-      }
-      return {
-        ...entry,
-        videoData: videoDataBase64,
-        // Remove video URL so JSON size is smaller and clean
-        video: undefined,
-      };
-    });
-
-    const blob = new Blob([JSON.stringify(exportEntries)], {
+    const blob = new Blob([JSON.stringify(entries)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
@@ -350,7 +308,6 @@ function App() {
     link.click();
   };
 
-  // Updated import: decode base64 to ArrayBuffer, create video URL
   const loadListFromFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -362,13 +319,11 @@ function App() {
       const store = tx.objectStore('entries');
 
       for (const entry of loadedEntries) {
-        if (entry.videoData) {
-          entry.videoData = base64ToArrayBuffer(entry.videoData);
-        }
         await store.put(entry);
       }
       await tx.done;
 
+      // Recreate video URLs from videoData on import
       const processedEntries = loadedEntries.map(entry => {
         if (entry.videoData) {
           const blob = new Blob([entry.videoData], { type: 'video/webm' });
@@ -498,15 +453,15 @@ function App() {
             )}
           </div>
 
-          {/* Live video preview is always rendered, show/hide by style */}
-          <video
-            ref={liveVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="live-video-preview"
-            style={{ display: recording ? 'block' : 'none' }}
-          />
+          {recording && (
+            <video
+              ref={liveVideoRef}
+              autoPlay
+              muted
+              className="live-video-preview"
+              playsInline
+            />
+          )}
 
           {videoURL && !recording && (
             <video
@@ -536,82 +491,91 @@ function App() {
           placeholder="Search..."
         />
 
-        <label htmlFor="filterCategorySelect" style={{ marginLeft: '16px', marginRight: '8px' }}>
-          Filter Category:
-        </label>
         <select
-          id="filterCategorySelect"
           className="filter-select"
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
         >
-          <option value="">All</option>
-          {categories.map((cat) => renderCategoryOption(cat))}
+          <option value="">All Categories</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
         </select>
       </div>
 
-      {categories.map((cat) => {
-        const catEntries = filteredEntries.filter((e) => e.category === cat);
-        if (catEntries.length === 0) return null;
-
-        return (
-          <div key={cat} className="category-group">
-            <div className="category-header">
-              {iconURLs[cat] && (
+      <div className="entries-section">
+        {categories.map((category) => {
+          const categoryEntries = filteredEntries.filter(
+            (e) => e.category === category
+          );
+          if (categoryEntries.length === 0) return null;
+          return (
+            <div key={category} className="category-group">
+              <div className="category-header">
                 <img
-                  src={iconURLs[cat]}
-                  alt={cat}
+                  src={iconURLs[category]}
+                  alt={category}
                   className="category-list-image"
                 />
-              )}
-              {cat}
-            </div>
-            {catEntries.map((entry) => (
-              <div key={entry.id} className="entry-card">
-                {categoryFields[cat]
-                  ? Object.entries(entry.data).map(([field, val]) => (
-                      <div key={field}>
-                        <strong>{field}:</strong> {val}
-                      </div>
-                    ))
-                  : null}
-
-                {entry.image && (
-                  <img
-                    src={entry.image}
-                    alt="Entry"
-                    className="entry-image"
-                    onClick={() => window.open(entry.image, '_blank')}
-                  />
-                )}
-                {entry.video && (
-                  <video
-                    className="entry-video"
-                    src={entry.video}
-                    controls
-                    preload="metadata"
-                  />
-                )}
-                <div className="timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
-                <div className="entry-actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => startEditEntry(entry)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteEntry(entry.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
+                {category}
               </div>
-            ))}
-          </div>
-        );
-      })}
+              {categoryEntries.map((entry) => (
+                <div key={entry.id} className="entry-card">
+                  {categoryFields[category]?.map(
+                    (field) =>
+                      entry.data?.[field] && (
+                        <p key={field}>
+                          <strong>{field}:</strong> {entry.data[field]}
+                        </p>
+                      )
+                  )}
+                  {!categoryFields[category] &&
+                    Object.keys(entry.data || {}).map((key) => (
+                      <p key={key}>
+                        <strong>{key}:</strong> {entry.data[key]}
+                      </p>
+                    ))}
+                  {entry.image && (
+                    <img
+                      src={entry.image}
+                      alt="Entry"
+                      className="entry-image"
+                      onClick={() => window.open(entry.image, '_blank')}
+                    />
+                  )}
+                  {entry.video && (
+                    <video
+                      src={entry.video}
+                      className="entry-video"
+                      controls
+                      preload="metadata"
+                    />
+                  )}
+                  <div className="timestamp">
+                    {new Date(entry.timestamp).toLocaleString()}
+                  </div>
+                  <div className="entry-actions">
+                    <button
+                      className="edit-btn"
+                      onClick={() => startEditEntry(entry)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteEntry(entry.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
 
       <div className="export-section">
         <button className="export-btn" onClick={saveListToFile}>
@@ -621,8 +585,8 @@ function App() {
           Import Entries
         </label>
         <input
-          id="importFileInput"
           type="file"
+          id="importFileInput"
           accept="application/json"
           onChange={loadListFromFile}
           style={{ display: 'none' }}
