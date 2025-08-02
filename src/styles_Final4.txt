@@ -72,9 +72,8 @@ body {
 .category-icon {
   width: 32px;
   height: 32px;
-  filter: drop-shadow(0 0 3px rgba(70 130 180 / 0.45));
+  filter: drop-shadow(0 0 2px rgba(70 130 180 / 0.5));
   filter: grayscale(100%) contrast(100%);
-  opacity: 0.8;
 }
 
 /* Prompt text */
@@ -238,15 +237,6 @@ body {
   object-fit: contain;
 }
 
-.entries-container {
-  border: 1.5px solid rgba(135, 206, 250, 0.4);
-  background-color: #f0f8ff; /* very light sky blue */
-  border-radius: 12px;
-  padding: 1rem;
-  margin-top: 0.5rem;
-  box-shadow: 0 2px 6px rgba(135, 206, 250, 0.2);
-}
-
 /* Save entry button */
 .save-btn {
   background-color: #3498db;
@@ -314,7 +304,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: #178fcb;
+  color: #1e3a8a;
   font-weight: 700;
   border-bottom: 2px solid rgba(135 206 250 / 0.7);
   padding-bottom: 0.3rem;
@@ -326,8 +316,6 @@ body {
   width: 28px;
   height: 28px;
   filter: drop-shadow(0 0 3px rgba(70 130 180 / 0.45));
-  filter: grayscale(100%) contrast(100%);
-  opacity: 0.8;
 }
 
 /* Entry cards */
@@ -367,30 +355,15 @@ body {
   object-fit: contain;
 }
 
-.media-row {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.entry-media {
-  max-width: 48%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(135, 206, 250, 0.3);
-  background: transparent;
-}
-
 /* Entry video */
 .entry-video {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(135, 206, 250, 0.3);
-  background: transparent;
-  display: block;
+  width: 100%;
+  max-height: 280px;
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  box-shadow: 0 0 14px 3px rgba(135 206 250 / 0.5);
+  user-select: none;
+  object-fit: contain;
 }
 
 /* Timestamp text */

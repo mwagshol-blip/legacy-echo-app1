@@ -1,0 +1,328 @@
+/* Modern clean with sky blue transparency shadows and outlines */
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f4ff;
+  margin: 0;
+  padding: 1rem;
+  color: #1e293b;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  max-width: 700px;
+  width: 100%;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(56, 221, 248, 0.3);
+  padding: 2rem 3rem;
+  box-sizing: border-box;
+}
+
+.banner-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.banner-image {
+  max-width: 600px;
+  width: 90%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(56, 221, 248, 0.4);
+  margin-bottom: 0.5rem;
+}
+
+.subheader {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #555;
+  margin-top: 0;
+}
+
+.category-select-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.category-select {
+  width: 200px;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 1rem;
+  appearance: none;
+  background: url("data:image/svg+xml;charset=UTF-8,%3csvg fill='%2338495d' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") no-repeat right 10px center;
+  background-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-select:hover,
+.category-select:focus {
+  border-color: #38ddf8;
+  box-shadow: 0 0 12px rgba(56, 221, 248, 0.6);
+  outline: none;
+}
+
+.category-icon {
+  width: 28px;
+  height: 28px;
+  filter: grayscale(100%) brightness(0) invert(0.3);
+  /* black & white */
+  margin-left: 8px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.entry-form {
+  background: rgba(56, 221, 248, 0.1);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 8px 20px rgba(56, 221, 248, 0.3);
+  margin-bottom: 2rem;
+  border: 1px solid #38ddf8;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 10px;
+}
+
+.form-row label {
+  width: 110px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.entry-input {
+  flex-grow: 1;
+  padding: 0.5rem 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #a5b4fc;
+  box-shadow: inset 0 0 6px rgba(56, 221, 248, 0.3);
+  transition: border-color 0.3s ease;
+}
+
+.entry-input:focus {
+  border-color: #38ddf8;
+  outline: none;
+}
+
+.add-image-btn,
+.record-btn,
+.stop-btn,
+.save-btn,
+.edit-btn,
+.delete-btn,
+.export-btn {
+  background: #38ddf8;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.3rem;
+  font-size: 1rem;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(56, 221, 248, 0.5);
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.add-image-btn:hover,
+.record-btn:hover,
+.stop-btn:hover,
+.save-btn:hover,
+.edit-btn:hover,
+.delete-btn:hover,
+.export-btn:hover {
+  background: #0ea5e9;
+}
+
+.add-image-btn {
+  margin-left: 0px;
+}
+
+.save-btn {
+  width: 100%;
+  margin-top: 1.2rem;
+  font-weight: 700;
+}
+
+.record-btn,
+.stop-btn {
+  width: 140px;
+  margin-top: 0;
+}
+
+.edit-btn,
+.delete-btn {
+  width: 70px;
+  margin: 0 5px;
+  font-size: 0.85rem;
+}
+
+.entry-image-preview {
+  max-height: 80px;
+  max-width: 80px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(56, 221, 248, 0.6);
+  cursor: pointer;
+  margin-left: 12px;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.entry-image-preview:hover {
+  transform: scale(1.05);
+}
+
+.entry-video-preview {
+  margin-top: 1rem;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(56, 221, 248, 0.6);
+  outline: none;
+  user-select: none;
+}
+
+.live-video-preview {
+  margin-top: 1rem;
+  width: 100%;
+  max-height: 360px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(56, 221, 248, 0.8);
+  outline: none;
+  user-select: none;
+  background: black;
+  object-fit: cover;
+}
+
+.video-record-controls {
+  margin-top: 0.4rem;
+}
+
+.filters-section {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-input,
+.filter-select {
+  border-radius: 12px;
+  border: 1.5px solid #a5b4fc;
+  padding: 0.6rem 0.9rem;
+  font-size: 1rem;
+  box-shadow: inset 0 0 8px rgba(56, 221, 248, 0.3);
+  transition: border-color 0.3s ease;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  border-color: #38ddf8;
+  outline: none;
+}
+
+.filter-input-small {
+  width: 140px;
+}
+
+.category-group {
+  margin-bottom: 2rem;
+}
+
+.category-header {
+  font-weight: 700;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f172a;
+  margin-bottom: 0.8rem;
+}
+
+.category-list-image {
+  width: 28px;
+  height: 28px;
+  filter: grayscale(100%) brightness(0) invert(0.3);
+}
+
+.entry-card {
+  background: rgba(56, 221, 248, 0.05);
+  border: 1px solid #38ddf8;
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 10px rgba(56, 221, 248, 0.2);
+  transition: box-shadow 0.3s ease;
+  position: relative;
+}
+
+.entry-card:hover {
+  box-shadow: 0 6px 20px rgba(56, 221, 248, 0.4);
+}
+
+.entry-image {
+  max-width: 150px;
+  max-height: 120px;
+  border-radius: 10px;
+  margin-top: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(56, 221, 248, 0.5);
+}
+
+.entry-video {
+  width: 100%;
+  margin-top: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(56, 221, 248, 0.5);
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #475569;
+  margin-top: 0.7rem;
+  font-style: italic;
+}
+
+.entry-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.export-section {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2rem;
+}
+
+.import-label {
+  background: #38ddf8;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(56, 221, 248, 0.5);
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.import-label:hover {
+  background: #0ea5e9;
+}
+

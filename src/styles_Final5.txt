@@ -238,15 +238,6 @@ body {
   object-fit: contain;
 }
 
-.entries-container {
-  border: 1.5px solid rgba(135, 206, 250, 0.4);
-  background-color: #f0f8ff; /* very light sky blue */
-  border-radius: 12px;
-  padding: 1rem;
-  margin-top: 0.5rem;
-  box-shadow: 0 2px 6px rgba(135, 206, 250, 0.2);
-}
-
 /* Save entry button */
 .save-btn {
   background-color: #3498db;

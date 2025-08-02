@@ -134,7 +134,7 @@ function App() {
 
   const handleCategoryChange = (category) => {
     if (category === '__new') {
-      const newCat = window.prompt('Enter new category name:');
+      const newCat = prompt('Enter new category name:');
       if (newCat && !categories.includes(newCat)) {
         setCategories([...categories, newCat]);
         setSelectedCategory(newCat);
@@ -601,7 +601,6 @@ function App() {
               )}
               {category}
             </h2>
-            <div className="entries-container">
             {catEntries.map((entry) => (
               <div key={entry.id} className="entry-card">
                 {Object.entries(entry.data).map(([field, value]) =>
@@ -616,24 +615,22 @@ function App() {
                     </div>
                   )
                 )}
-                {(entry.image || entry.video) && (
-  <div className="media-row">
-    {entry.image && (
-      <img
-        src={entry.image}
-        alt="Uploaded"
-        className="entry-media"
-      />
-    )}
-    {entry.video && (
-      <video
-        controls
-        src={entry.video}
-        className="entry-media"
-      />
-    )}
-  </div>
-)}
+                {entry.image && (
+                  <img
+                    src={entry.image}
+                    alt="Entry"
+                    className="entry-image"
+                    onClick={() => window.open(entry.image, '_blank')}
+                  />
+                )}
+                {entry.video && (
+                  <video
+                    src={entry.video}
+                    controls
+                    preload="metadata"
+                    className="entry-video"
+                  />
+                )}
                 <div className="timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
                 <div className="entry-actions">
                   <button className="edit-btn" onClick={() => startEditEntry(entry)}>
@@ -645,7 +642,6 @@ function App() {
                 </div>
               </div>
             ))}
-          </div>
           </div>
         );
       })}

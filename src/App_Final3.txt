@@ -134,7 +134,7 @@ function App() {
 
   const handleCategoryChange = (category) => {
     if (category === '__new') {
-      const newCat = window.prompt('Enter new category name:');
+      const newCat = prompt('Enter new category name:');
       if (newCat && !categories.includes(newCat)) {
         setCategories([...categories, newCat]);
         setSelectedCategory(newCat);
@@ -439,62 +439,31 @@ function App() {
       {selectedCategory && selectedCategory !== '__new' && (
         <div className="entry-form">
           {categoryFields[selectedCategory]
-            ? categoryFields[selectedCategory].map((field) => {
-                if (field.toLowerCase() === 'comment') {
-                  // Render textarea for comment field
-                  return (
-                    <div className="form-row" key={field}>
-                      <label>{field}:</label>
-                      <textarea
-                        className="textarea-input"
-                        value={entryData[field] || ''}
-                        onChange={(e) => handleFieldChange(field, e.target.value)}
-                      />
-                    </div>
-                  );
-                } else {
-                  // Render normal input for other fields
-                  return (
-                    <div className="form-row" key={field}>
-                      <label>{field}:</label>
-                      <input
-                        type="text"
-                        value={entryData[field] || ''}
-                        onChange={(e) => handleFieldChange(field, e.target.value)}
-                        className="entry-input"
-                      />
-                    </div>
-                  );
-                }
-              })
-            : ["Title", "Comment"].map((field) => {
-                if (field.toLowerCase() === 'comment') {
-                  return (
-                    <div className="form-row" key={field}>
-                      <label>{field}:</label>
-                      <textarea
-                        className="textarea-input"
-                        value={entryData[field] || ''}
-                        onChange={(e) => handleFieldChange(field, e.target.value)}
-                      />
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div className="form-row" key={field}>
-                      <label>{field}:</label>
-                      <input
-                        type="text"
-                        value={entryData[field] || ''}
-                        onChange={(e) => handleFieldChange(field, e.target.value)}
-                        className="entry-input"
-                      />
-                    </div>
-                  );
-                }
-              })}
+            ? categoryFields[selectedCategory].map((field) => (
+                <div className="form-row" key={field}>
+                  <label>{field}:</label>
+                  <input
+                    type="text"
+                    value={entryData[field] || ''}
+                    onChange={(e) => handleFieldChange(field, e.target.value)}
+                    className="entry-input"
+                  />
+                </div>
+              ))
+            : ["Title", "Comment"].map((field) => (
+                <div className="form-row" key={field}>
+                  <label>{field}:</label>
+                  <input
+                    type="text"
+                    value={entryData[field] || ''}
+                    onChange={(e) => handleFieldChange(field, e.target.value)}
+                    className="entry-input"
+                  />
+                </div>
+              ))}
 
           <div className="form-row">
+            
             <input
               type="file"
               accept="image/*"
@@ -565,10 +534,10 @@ function App() {
           type="text"
           value={filterKeyword}
           onChange={(e) => setFilterKeyword(e.target.value)}
-          placeholder="Search all fields"
+          placeholder="Search..."
         />
 
-        <label htmlFor="filterCategorySelect" style={{ marginLeft: '1rem', marginRight: '8px' }}>
+        <label htmlFor="filterCategorySelect" style={{ marginLeft: '16px', marginRight: '8px' }}>
           Filter Category:
         </label>
         <select
@@ -578,74 +547,69 @@ function App() {
           onChange={(e) => setFilterCategory(e.target.value)}
         >
           <option value="">All</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
+          {categories.map((cat) => renderCategoryOption(cat))}
         </select>
       </div>
 
-      {categories.map((category) => {
-        const catEntries = filteredEntries.filter((e) => e.category === category);
+      {categories.map((cat) => {
+        const catEntries = filteredEntries.filter((e) => e.category === cat);
         if (catEntries.length === 0) return null;
+
         return (
-          <div key={category} className="category-group">
-            <h2 className="category-header">
-              {iconURLs[category] && (
+          <div key={cat} className="category-group">
+            <div className="category-header">
+              {iconURLs[cat] && (
                 <img
-                  src={iconURLs[category]}
-                  alt={category}
+                  src={iconURLs[cat]}
+                  alt={cat}
                   className="category-list-image"
                 />
               )}
-              {category}
-            </h2>
-            <div className="entries-container">
+              {cat}
+            </div>
             {catEntries.map((entry) => (
               <div key={entry.id} className="entry-card">
-                {Object.entries(entry.data).map(([field, value]) =>
-                  field.toLowerCase() !== 'comment' ? (
-                    <div key={field}>
-                      <strong>{field}:</strong> {value}
-                    </div>
-                  ) : (
-                    <div key={field}>
-                      <strong>{field}:</strong>
-                      <p style={{ whiteSpace: 'pre-wrap' }}>{value}</p>
-                    </div>
-                  )
+                {categoryFields[cat]
+                  ? Object.entries(entry.data).map(([field, val]) => (
+                      <div key={field}>
+                        <strong>{field}:</strong> {val}
+                      </div>
+                    ))
+                  : null}
+
+                {entry.image && (
+                  <img
+                    src={entry.image}
+                    alt="Entry"
+                    className="entry-image"
+                    onClick={() => window.open(entry.image, '_blank')}
+                  />
                 )}
-                {(entry.image || entry.video) && (
-  <div className="media-row">
-    {entry.image && (
-      <img
-        src={entry.image}
-        alt="Uploaded"
-        className="entry-media"
-      />
-    )}
-    {entry.video && (
-      <video
-        controls
-        src={entry.video}
-        className="entry-media"
-      />
-    )}
-  </div>
-)}
+                {entry.video && (
+                  <video
+                    className="entry-video"
+                    src={entry.video}
+                    controls
+                    preload="metadata"
+                  />
+                )}
                 <div className="timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
                 <div className="entry-actions">
-                  <button className="edit-btn" onClick={() => startEditEntry(entry)}>
+                  <button
+                    className="edit-btn"
+                    onClick={() => startEditEntry(entry)}
+                  >
                     Edit
                   </button>
-                  <button className="delete-btn" onClick={() => deleteEntry(entry.id)}>
+                  <button
+                    className="delete-btn"
+                    onClick={() => deleteEntry(entry.id)}
+                  >
                     Delete
                   </button>
                 </div>
               </div>
             ))}
-          </div>
           </div>
         );
       })}
@@ -654,12 +618,12 @@ function App() {
         <button className="export-btn" onClick={saveListToFile}>
           Export Entries
         </button>
-        <label htmlFor="importInput" className="import-label">
+        <label htmlFor="importFileInput" className="import-label">
           Import Entries
         </label>
         <input
+          id="importFileInput"
           type="file"
-          id="importInput"
           accept="application/json"
           onChange={loadListFromFile}
           style={{ display: 'none' }}
